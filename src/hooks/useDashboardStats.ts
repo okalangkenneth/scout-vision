@@ -93,7 +93,7 @@ export function useRecentReports() {
 
       console.log("[useRecentReports] fetched", data?.length ?? 0, "reports");
 
-      const rows = (data ?? []) as RawReportRow[];
+      const rows = (data ?? []) as unknown as RawReportRow[];
       return rows.map((row) => ({
         id: row.id,
         athleteName: row.athletes?.name ?? "Unknown",
