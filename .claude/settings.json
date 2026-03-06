@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "bun run *",
+      "npm run *",
+      "git status",
+      "git log *",
+      "git diff *",
+      "git add *",
+      "git commit *",
+      "git push *",
+      "git checkout *",
+      "git branch *",
+      "gh issue *",
+      "gh pr *",
+      "curl http://localhost:37777/*"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run format || true"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[PRE-COMPACT] Creating checkpoint...' && git add -A && git commit -m 'checkpoint: pre-compact $(date +%Y%m%d-%H%M%S)' --allow-empty || true"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {}
+}
