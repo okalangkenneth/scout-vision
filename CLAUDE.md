@@ -17,19 +17,19 @@
 - Routing: react-router-dom with ProtectedRoute
 - Auth context: Supabase auth skeleton
 - Directory structure: pages, components, hooks, services, types, lib
+- Supabase schema: `supabase/schema.sql` (profiles, athletes, videos, analysis_reports, subscriptions)
+- Landing page UI (src/pages/Landing.tsx)
+- Auth pages: Login + Signup (src/pages/Login.tsx, src/pages/Signup.tsx)
+- Dashboard page with stats cards + sidebar layout (src/pages/Dashboard.tsx, src/components/Sidebar.tsx, src/hooks/useDashboardStats.ts)
+- Athletes CRUD: card grid, Add/Edit modal (react-hook-form), optimistic delete (src/pages/Athletes.tsx, src/hooks/useAthletes.ts)
+- Video Analysis: drag-and-drop upload → Supabase Storage → Canvas frame extraction → OpenAI GPT-4o vision → report saved (src/pages/VideoAnalysis.tsx, src/services/openai.ts)
+- Reports page: filter by athlete/sport, expandable cards, Recharts radar chart, @media print PDF export (src/pages/Reports.tsx, src/hooks/useReports.ts)
+- README.md with setup instructions
 
 ### 🔨 IN PROGRESS
-<!-- Current work -->
+<!-- nothing currently in progress -->
 
 ### ❌ REMAINING
-- Supabase project setup + schema
-- Landing page UI
-- Auth pages (Login, Signup)
-- Dashboard page
-- Athletes CRUD (profiles, stats, positions)
-- Video upload + Supabase Storage
-- OpenAI video analysis pipeline
-- Scouting report generation + PDF export
 - Stripe subscription gating
 - Admin panel
 
