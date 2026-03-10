@@ -350,7 +350,11 @@ function ReportDisplay({
   athleteName: string;
 }) {
   const handleDownloadPDF = () => {
-    console.log("[ReportDisplay] PDF download requested for:", athleteName);
+    // Set the document title so the saved PDF filename is the athlete's name
+    const prevTitle = document.title;
+    document.title = `ScoutVision – ${athleteName} – ${new Date().toLocaleDateString("en-GB")}`;
+    window.print();
+    document.title = prevTitle;
   };
 
   return (
@@ -1112,6 +1116,38 @@ export function VideoAnalysis() {
           <ReportDisplay report={report} athleteName={selectedAthlete.name} />
         )}
       </main>
+
+      {/* Print styles — hides everything except the report section */}
+      <style>{`
+        @media print {
+          @page { margin: 20mm; }
+          body * { visibility: hidden !important; }
+          main, main * { visibility: visible !important; }
+          main {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
+          }
+          /* hide step 1/2 controls — only show the done report */
+          main > *:not(:last-child) { display: none !important; }
+          /* force light colours for readability */
+          [style*="background: #111"],
+          [style*="background: #0a0a0a"],
+          [style*="background: #1a1a1a"] {
+            background: white !important;
+            color: black !important;
+          }
+          [style*="border: 1px solid #222"] {
+            border-color: #ccc !important;
+          }
+          button { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

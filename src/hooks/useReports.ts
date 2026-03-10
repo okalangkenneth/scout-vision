@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import type { ScoutingReport } from "../services/openai";
@@ -47,6 +47,24 @@ export function useReports() {
         createdAt: row.created_at,
         report: row.report,
       }));
+    },
+  });
+}
+
+export function useDeleteReport() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (reportId: string) => {
+      const { error } = await supabase
+        .from("analysis_reports")
+        .delete()
+        .eq("id", reportId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports", user?.id] });
     },
   });
 }

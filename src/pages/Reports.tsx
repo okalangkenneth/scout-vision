@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Sidebar } from "../components/layout/Sidebar";
-import { useReports, type FullReport } from "../hooks/useReports";
+import { useReports, useDeleteReport, type FullReport } from "../hooks/useReports";
 import type { ScoutingReport } from "../services/openai";
 
 const ACCENT = "#6366f1";
@@ -413,11 +413,13 @@ function ReportCard({
   expanded,
   onToggle,
   onPrint,
+  onDelete,
 }: {
   report: FullReport;
   expanded: boolean;
   onToggle: () => void;
   onPrint: () => void;
+  onDelete: () => void;
 }) {
   const r = fr.report;
 
@@ -687,15 +689,40 @@ function ReportCard({
             </div>
           )}
 
-          {/* Export PDF button */}
+          {/* Actions row */}
           <div
             style={{
               paddingTop: "0.75rem",
               borderTop: `1px solid ${BORDER}`,
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
+            {/* Delete button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.55rem 1.1rem",
+                borderRadius: "0.375rem",
+                border: "1px solid rgba(239,68,68,0.3)",
+                background: "transparent",
+                color: "#f87171",
+                fontSize: "0.85rem",
+                fontFamily: FONT,
+                cursor: "pointer",
+              }}
+            >
+              🗑 Delete
+            </button>
+
+            {/* Export PDF button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -783,9 +810,11 @@ function FilterSelect({
 
 export function Reports() {
   const { data: reports, isLoading } = useReports();
+  const deleteReport = useDeleteReport();
 
   const [athleteFilter, setAthleteFilter] = useState("");
   const [sportFilter, setSportFilter] = useState("");
+  const [deletingReportId, setDeletingReportId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [printingReport, setPrintingReport] = useState<FullReport | null>(null);
 
@@ -820,13 +849,20 @@ export function Reports() {
   };
 
   const handlePrint = (report: FullReport) => {
+    const prevTitle = document.title;
+    document.title = `ScoutVision – ${report.athleteName} – ${new Date().toLocaleDateString("en-GB")}`;
     setPrintingReport(report);
-    console.log("[Reports] printing report for:", report.athleteName);
-    // Allow the DOM to render the print section before triggering print
     setTimeout(() => {
       window.print();
+      document.title = prevTitle;
       setPrintingReport(null);
     }, 150);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingReportId) return;
+    await deleteReport.mutateAsync(deletingReportId);
+    setDeletingReportId(null);
   };
 
   return (
@@ -949,6 +985,7 @@ export function Reports() {
                 expanded={expandedIds.has(report.id)}
                 onToggle={() => toggleExpand(report.id)}
                 onPrint={() => handlePrint(report)}
+                onDelete={() => setDeletingReportId(report.id)}
               />
             ))}
           </div>
@@ -958,15 +995,71 @@ export function Reports() {
       {/* Hidden section revealed by @media print */}
       {printingReport && <PrintSection report={printingReport} />}
 
+      {/* Delete confirm dialog */}
+      {deletingReportId && (
+        <div
+          style={{
+            position: "fixed", inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "#1a1a1a",
+              border: "1px solid #333",
+              borderRadius: "0.75rem",
+              padding: "2rem",
+              maxWidth: "400px",
+              width: "90%",
+            }}
+          >
+            <h3 style={{ margin: "0 0 0.75rem", fontSize: "1.1rem", fontWeight: 700 }}>
+              Delete Report
+            </h3>
+            <p style={{ color: "#a1a1aa", fontSize: "0.9rem", margin: "0 0 1.5rem", lineHeight: 1.6 }}>
+              Are you sure you want to delete this scouting report? This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setDeletingReportId(null)}
+                style={{
+                  padding: "0.6rem 1.25rem", borderRadius: "0.5rem",
+                  border: "1px solid #333", background: "transparent",
+                  color: "#a1a1aa", fontSize: "0.875rem", fontFamily: FONT, cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteReport.isPending}
+                style={{
+                  padding: "0.6rem 1.25rem", borderRadius: "0.5rem",
+                  border: "none", background: "#ef4444",
+                  color: "#fff", fontSize: "0.875rem", fontFamily: FONT,
+                  cursor: deleteReport.isPending ? "not-allowed" : "pointer",
+                  opacity: deleteReport.isPending ? 0.7 : 1,
+                }}
+              >
+                {deleteReport.isPending ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Print styles */}
       <style>{`
         @media print {
+          @page { margin: 20mm; }
           body * { visibility: hidden; }
           #scout-print-section { display: block !important; }
           #scout-print-section,
           #scout-print-section * { visibility: visible; }
           #scout-print-section {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;

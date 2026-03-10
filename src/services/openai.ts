@@ -37,9 +37,9 @@ export async function analyseVideoFrames(
     "frames to OpenAI GPT-4o",
   );
 
-  const userPrompt = `Athlete: ${athlete.name}, Sport: ${athlete.sport}, Position: ${
-    athlete.position ?? "Unknown"
-  }. Analyse their technique, movement, positioning, strengths, and weaknesses from these video frames.`;
+  const userPrompt = `Analyse these video frames of athlete ${athlete.name} who plays ${athlete.sport} as a ${
+    athlete.position ?? "player"
+  }. Evaluate their technique, movement quality, positioning, court/field awareness, and overall athletic ability. Be specific and honest in your assessment. Provide a rating from 1-10 and a written summary.`;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -52,8 +52,29 @@ export async function analyseVideoFrames(
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert sports scout. Analyse the provided video frames of an athlete and return a structured JSON scouting report.",
+          content: `You are an expert sports scout. Analyse the provided video frames of an athlete and return a structured JSON scouting report.
+
+You MUST return a JSON object with EXACTLY these fields and no others:
+{
+  "overall_rating": <integer 1-10>,
+  "summary": "<2-3 sentence overall assessment of the athlete>",
+  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "weaknesses": ["<area to improve 1>", "<area to improve 2>"],
+  "technical_skills": {
+    "ball_handling": <integer 1-10>,
+    "shooting": <integer 1-10>,
+    "passing": <integer 1-10>,
+    "footwork": <integer 1-10>
+  },
+  "physical_attributes": {
+    "speed": <integer 1-10>,
+    "agility": <integer 1-10>,
+    "strength": <integer 1-10>
+  },
+  "recommendations": ["<recommendation 1>", "<recommendation 2>", "<recommendation 3>"]
+}
+
+Use the exact field names shown above. overall_rating must be a number between 1 and 10. summary must be a non-empty string.`,
         },
         {
           role: "user",
