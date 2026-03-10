@@ -1,6 +1,6 @@
 # ScoutVision
 
-> AI-powered sports scouting platform — upload an athlete's video clip, get a structured performance report in seconds.
+> AI-powered sports scouting platform. Uload an athlete's video clip, get a structured performance report in seconds.
 
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-6B48FF?logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 
